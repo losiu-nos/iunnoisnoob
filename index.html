@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iunno | Portfolio</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="snowCanvas" aria-hidden="true"></canvas>
+    <div id="cursorDot" aria-hidden="true">✦</div>
+
+    <header class="container header">
+      <a class="logo" href="#home">Iunno</a>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="home" class="container">
+      <section class="hero">
+        <p id="role">Frontend Developer</p>
+        <h1 id="name">Your Name</h1>
+        <p id="tagline">I build fast, clean, and modern web experiences.</p>
+        <div class="actions">
+          <a class="btn primary" href="#projects">See My Work</a>
+          <a class="btn" href="#contact">Find Me</a>
+        </div>
+      </section>
+
+      <section id="about">
+        <h2>About</h2>
+        <p id="aboutText">
+          Replace this with a short intro about your background, strengths, and what you are looking for.
+        </p>
+      </section>
+
+      <section id="projects">
+        <h2>Projects</h2>
+        <div id="projectList" class="projects"></div>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <p>Just here to share what I make and the communities I am in.</p>
+        <p id="clockText">Current time: --:--:--</p>
+        <div class="links">
+          <a id="discordLink" href="#" target="_blank" rel="noreferrer">Discord</a>
+          <a id="githubLink" href="#" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+        <button id="musicToggle" class="btn music-btn" type="button">Play lo-fi</button>
+      </section>
+    </main>
+
+    <footer class="container footer">
+      <p>© <span id="year"></span> <span id="footerName">Your Name</span></p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
