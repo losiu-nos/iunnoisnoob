@@ -83,35 +83,110 @@ function setupMusic() {
   audio.volume = 0.35;
 
   let isPlaying = false;
+  let audioContext;
+  let synthNodes = null;
 
-  async function tryAutoplay() {
+  function startSynthLofi() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === "suspended") {
+      audioContext.resume();
+    }
+    if (synthNodes) {
+      return;
+    }
+
+    const master = audioContext.createGain();
+    master.gain.value = 0.06;
+    master.connect(audioContext.destination);
+
+    const lowpass = audioContext.createBiquadFilter();
+    lowpass.type = "lowpass";
+    lowpass.frequency.value = 1100;
+    lowpass.Q.value = 0.7;
+    lowpass.connect(master);
+
+    const pad = audioContext.createOscillator();
+    const padGain = audioContext.createGain();
+    pad.type = "triangle";
+    pad.frequency.value = 220;
+    padGain.gain.value = 0.03;
+    pad.connect(padGain);
+    padGain.connect(lowpass);
+    pad.start();
+
+    const bass = audioContext.createOscillator();
+    const bassGain = audioContext.createGain();
+    bass.type = "sine";
+    bass.frequency.value = 55;
+    bassGain.gain.value = 0.06;
+    bass.connect(bassGain);
+    bassGain.connect(lowpass);
+    bass.start();
+
+    synthNodes = { pad, bass, master };
+  }
+
+  function stopSynthLofi() {
+    if (!synthNodes) {
+      return;
+    }
+    synthNodes.pad.stop();
+    synthNodes.bass.stop();
+    synthNodes.master.disconnect();
+    synthNodes = null;
+  }
+
+  async function startRealAudioWithFallback() {
     try {
+      const before = audio.currentTime;
       await audio.play();
+      // Some browsers resolve play() even when stream is not really audible yet.
+      setTimeout(() => {
+        const progressed = audio.currentTime > before + 0.05;
+        if (!progressed) {
+          audio.pause();
+          startSynthLofi();
+        }
+        isPlaying = true;
+        musicToggle.textContent = "Pause lo-fi";
+      }, 1800);
+    } catch (_error) {
+      startSynthLofi();
       isPlaying = true;
       musicToggle.textContent = "Pause lo-fi";
-    } catch (_error) {
-      musicToggle.textContent = "Play lo-fi";
     }
+  }
+
+  async function tryAutoplay() {
+    await startRealAudioWithFallback();
   }
 
   musicToggle.addEventListener("click", async () => {
     if (!isPlaying) {
-      try {
-        await audio.play();
-        isPlaying = true;
-        musicToggle.textContent = "Pause lo-fi";
-      } catch (_error) {
-        musicToggle.textContent = "Click again to play";
-      }
+      await startRealAudioWithFallback();
       return;
     }
 
     audio.pause();
+    stopSynthLofi();
     isPlaying = false;
     musicToggle.textContent = "Play lo-fi";
   });
 
   tryAutoplay();
+
+  const retryAutoplayOnInteraction = async () => {
+    if (isPlaying) {
+      return;
+    }
+    await startRealAudioWithFallback();
+  };
+
+  window.addEventListener("pointerdown", retryAutoplayOnInteraction, {
+    once: true,
+  });
 }
 
 function setupCursorEffects() {
